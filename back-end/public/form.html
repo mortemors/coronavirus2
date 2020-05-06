@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  <div>
+    Create a operation:
+    <hr/>
+    <form action="/operation" method="POST">
+      <input placeholder="Usuário" name="usuario" >
+      <input placeholder="Carteira" name="carteira" >
+      <input placeholder="Ativo" name="ativo" >
+      <input placeholder="Data" name="data" type="date"/>
+      <input placeholder="Op" name="op"/>
+      <input placeholder="Quantidade" name="quantidade" type="number"/>
+      <input placeholder="Preco"  name="preco" type="number" step="0.01"/>
+      <input placeholder="Taxas" name="taxas"type="number" step="0.01"/>
+      <input placeholder="Corretora" name="corretora"/>
+      <input placeholder="dd" name="dd"type="number"step="0.01"/>
+      <button>Submit</button>
+    </form>
+  </div>
+</body>
+</html>
