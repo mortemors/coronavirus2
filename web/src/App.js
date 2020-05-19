@@ -1,12 +1,24 @@
 import React, {useState, useEffect} from 'react'
 import OperationTable from './tables/OperationTable'
+import RealTimeTable from './tables/RealTimeTable'
 import AddOperationForm from './forms/AddOperationForm'
 import Chart from './components/Chart'
-// import api from '../src/services/api'
+import api from '../src/services/api'
+import Routes from "./routes";
+import axios from 'axios'
+
+let keys = []
+let time = 15000
+let stp = {}
+
 
 const operationsData = []
+const operationsTotal = []
+const currentPrices = []
 
 const App = () => {
+  
+
   useEffect(() => {
     fetch(
       `http://localhost:3000/operations`,
@@ -17,15 +29,42 @@ const App = () => {
       .then(res => res.json())
       .then(response => {
         setOperations(response);
-        // console.log(response);
       })
       .catch(error => console.log(error));
   }, []);
+  useEffect(() => {
+    fetch(
+      `http://localhost:3000/operations/total`,
+      {
+        method: "GET",
+      }
+      )
+      .then(res => res.json())
+      .then(response => {
+        response.forEach(r => {
+          keys.push(Object.keys(r)[0])
+        })
+        setTotals(response);
+      })
+      .catch(error => console.log(error));
+      setPrices([...prices, operations])
+      setTimeout(()=> {loadTotal(keys)
+      setTimeout(()=> {loadTotal(keys)
+      setTimeout(()=> {loadTotal(keys)
+      setTimeout(loadTotal(keys),500)},500)},500)},500)
+      
+      
+      setInterval(()=>{
+        loadTotal(keys)    
+      },time)
+    }, []);
 
   
 
   const [operations, setOperations] = useState(operationsData)
-
+  const [totals, setTotals] = useState(operationsTotal)
+  const [prices, setPrices] = useState(currentPrices)
+  
   const [editing, setEditing] = useState(false)
   const initialFormState = {id: null, usuario:'', carteira:'', ativo: '', preco: '', quantidade:''}
   const [currentOperation, setCurrentOperation] = useState(initialFormState)
@@ -97,7 +136,7 @@ const App = () => {
       .catch(error => console.log(error));
     setOperations([...operations, operation])
   }
-
+  
   const loadCurrentOperations = operation => {
     fetch(
       `http://localhost:3000/operations/total`,
@@ -105,18 +144,30 @@ const App = () => {
         method: "GET",
       }
     )
-      .then(res => res.json())
+    .then(res => res.json())
       .then(response => {
         return response;
       })
       .catch(error => console.log(error));
-  }
-
+    }
+    
+  const loadTotal = (stocks) =>{
+    stocks.forEach(stock =>{
+      axios.get(`http://cotacao.b3.com.br/mds/api/v1/DailyFluctuationHistory/${stock}`).then(res => {
+        if(res.data.TradgFlr.scty.lstQtn[res.data.TradgFlr.scty.lstQtn.length-1]){
+          let price = res.data.TradgFlr.scty.lstQtn[res.data.TradgFlr.scty.lstQtn.length-1].closPric
+          stp[stock] = price
+        }
+      })
+    })
+    setPrices([...prices, stp])
+    }
+      
   const deleteOperation = id => {
-    fetch(
-      `http://localhost:3000/operation/${id}`,
-      {
-        method: "GET",
+        fetch(
+          `http://localhost:3000/operation/${id}`,
+          {
+            method: "GET",
       }
       )
     setOperations(operations.filter(operation => operation.id !== id))
@@ -158,7 +209,8 @@ const App = () => {
     
     <div>
       <h1>Investimentos</h1>
-      <Chart loadCurrentOperations={loadCurrentOperations}/>
+      <RealTimeTable totals={totals} prices={prices}/>
+      <Chart loadCurrentOperations={loadCurrentOperations} prices={prices} totals={totals}/>
         <div className="flex-large">
           <div>
             <h2>Adicionar operação</h2>

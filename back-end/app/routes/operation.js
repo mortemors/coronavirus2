@@ -80,26 +80,40 @@ router.get('/operations/totais', (req,res)=>{
   
 })
 router.get('/operations/total', (req,res)=>{
-  var objetoAtivo = []
+  var activeOperation = []
   exec().sync().then(async function(){
     const result = await define().findAll();
     
     result.forEach((e) => {
-      if(!objetoAtivo.find((o) => {
+      if(!activeOperation.find((o) => {
         return o.hasOwnProperty(e['ativo'])
       })){
-        objetoAtivo.push({[e['ativo']]:[e['quantidade'],e['preco']*e['quantidade']]})
-      }else{
-        objetoAtivo.find((o) => {
-          if(o[e['ativo']]){
-            console.log(o[e['ativo']][0], o[e['ativo']][0])
-            o[e['ativo']][0] += e['quantidade']
-            o[e['ativo']][1] += e['preco']*e['quantidade']
-          }
-        })
+        // console.log(activeOperation)
+        activeOperation.push({[e['ativo']]:{'quantidade':e['quantidade'],'precoTotal':e['preco']*e['quantidade']}})
+      } else {
+        if(e['op'] === 'C'){
+          activeOperation.find(o => o[e['ativo']])[e['ativo']]['quantidade'] += e['quantidade']
+          activeOperation.find(o => o[e['ativo']])[e['ativo']]['precoTotal'] += e['preco']*e['quantidade']
+        } else {
+          activeOperation.find(o => o[e['ativo']])[e['ativo']]['quantidade'] -= e['quantidade']
+          activeOperation.find(o => o[e['ativo']])[e['ativo']]['precoTotal'] -= e['preco']*e['quantidade']
+        }
+        // console.log(e['ativo'],e['data'], e['op'], e['preco'])
       }
+      // if(activeOperation[e['ativo']]){
+      //   if(e['op'] === 'C'){
+      //     activeOperation[e['ativo']]['quantidade'] += e['quantidade']
+      //     activeOperation[e['ativo']]['precoTotal'] += e['preco']*e['quantidade']
+      //   }else if(e['op']){
+      //     activeOperation[e['ativo']]['quantidade'] -= e['quantidade']
+      //     activeOperation[e['ativo']]['precoTotal'] -= e['preco']*e['quantidade']
+      //   }
+      //   console.log('A',e['ativo'])
+      // }else{
+      //   activeOperation[e['ativo']] = {'quantidade':e['quantidade'], 'precoTotal':e['preco']*e['quantidade']}
+      // }
     })
-    res.send(objetoAtivo)
+    res.send(activeOperation)
   });
   
 })
